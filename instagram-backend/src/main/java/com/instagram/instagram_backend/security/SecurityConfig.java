@@ -51,11 +51,11 @@ public class SecurityConfig {
                                 .requestMatchers(
                                         "/api/auth/Register",
                                         "/api/auth/Login",
-//                                "/api/posts/**",
-//                                "/api/comments/**",
+                                       "/api/auth/refresh-token",
+                                      "/api/auth/logout",
                                         "/swagger-ui/**",
                                         "/swagger-ui.html",
-                                        "/actuator/health"
+                                        "/actuator/*"
                                 ).permitAll()
                                 .anyRequest().authenticated()
                 )

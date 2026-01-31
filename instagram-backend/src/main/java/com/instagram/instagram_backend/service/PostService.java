@@ -52,6 +52,15 @@ public class PostService {
         return postRepository.findByUser(user);
     }
 
+    public List<Post> getFeedPosts(String username) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        // For simplicity, returning all posts as feed
+        return postRepository.findAll();
+    }
+
     @Transactional
     public Post createPost(PostRequest post, String username) {
         User user = userRepository.findByUsername(username);

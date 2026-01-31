@@ -1,6 +1,10 @@
 package com.instagram.instagram_backend.dto;
 
 
+import com.instagram.instagram_backend.model.role.Role;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -43,6 +47,18 @@ public class RegisterRequest {
     @Size(max = 100)
     @Email
     private String email;
+
+//    public Role getRole() {
+//        return role;
+//    }
+//
+//    public void setRole(Role role) {
+//        this.role = role;
+//    }
+//
+//    @Enumerated(EnumType.STRING)
+//    @Column(nullable = true)
+//    private Role role;
 
     public RegisterRequest(String username, String email, String password) {
         this.username = username;
