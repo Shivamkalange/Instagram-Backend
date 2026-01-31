@@ -19,7 +19,7 @@ public class Comment {
     private Long id;
 
     @NotBlank
-    @Size(max=500)
+    @Size(max = 500)
     @Column(nullable = false, length = 500)
     private String content;
 
@@ -104,5 +104,6 @@ public class Comment {
         this.updatedAt = updatedAt;
     }
 
-    public Comment() {}
+    public Comment() {
+    }
 }

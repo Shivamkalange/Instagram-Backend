@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
@@ -14,7 +16,7 @@ import org.springframework.security.core.Authentication;
 import java.util.List;
 import java.util.Optional;
 
-
+@EnableWebSecurity
 @RestController
 @RequestMapping("/api/posts")
 public class PostController {
@@ -59,6 +61,15 @@ public class PostController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
+
+    @GetMapping("/feed")
+    public ResponseEntity<List<Post>> getFeedPosts(Authentication authentication) {
+        String username = authentication.getName();
+        List<Post> feedPosts = postService.getFeedPosts(username);
+        return ResponseEntity.ok(feedPosts);
+    }
+
 
     @PostMapping("{username}")
     public ResponseEntity<?> createPost(@Valid @RequestBody PostRequest postRequest, @PathVariable String username) {

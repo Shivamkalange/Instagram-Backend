@@ -1,13 +1,11 @@
 package com.instagram.instagram_backend.model;
 
 
+import com.instagram.instagram_backend.model.role.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -26,14 +24,73 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
+    @NotBlank
+    @Size(max = 100)
+    @Email
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @Column(nullable = true)
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+
     public @NotBlank @Size(max = 100) @Email String getEmail() {
         return email;
     }
 
+    @NotBlank
+    @Size(min = 6, max = 100)
+    @Column(nullable = false)
+    private String password;
+
+    @Size(max = 150)
+    private String bio;
+
+    @Size(max = 500)
+    private String profilePictureUrl;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_followers",
+            joinColumns = @JoinColumn(name = "follower_id"),
+            inverseJoinColumns = @JoinColumn(name = "following_id")
+    )
+    private Set<User> following = new HashSet<>();
+
+    @ManyToMany(mappedBy = "following", fetch = FetchType.LAZY)
+    private Set<User> followers = new HashSet<>();
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+
     public User() {
     }
 
-    public User(Long id, String username, String email, String password, String bio, String profilePictureUrl, LocalDateTime createdAt, LocalDateTime updatedAt, Set<User> following, Set<User> followers) {
+    public User(Long id, String username, String email, String password, String bio, String profilePictureUrl, Role role, LocalDateTime createdAt, LocalDateTime updatedAt, Set<User> following, Set<User> followers) {
+        this.role = role;
         this.id = id;
         this.username = username;
         this.email = email;
@@ -50,11 +107,6 @@ public class User {
         this.email = email;
     }
 
-    @NotBlank
-      @Size(max=100)
-      @Email
-      @Column(unique = true, nullable = false)
-      private String email;
 
     public Long getId() {
         return id;
@@ -127,45 +179,6 @@ public class User {
     public void setFollowers(Set<User> followers) {
         this.followers = followers;
     }
-
-    @NotBlank
-      @Size(min=6, max=100)
-      @Column(nullable = false)
-      private String password;
-
-      @Size(max=150)
-      private String bio;
-
-      @Size(max=500)
-      private String profilePictureUrl;
-
-      @Column(nullable = false, updatable = false)
-      private LocalDateTime createdAt;
-
-      private LocalDateTime updatedAt;
-
-      @ManyToMany(fetch = FetchType.LAZY)
-      @JoinTable(
-              name = "user_followers",
-              joinColumns = @JoinColumn(name = "follower_id"),
-              inverseJoinColumns = @JoinColumn(name = "following_id")
-      )
-      private Set<User> following = new HashSet<>();
-
-      @ManyToMany(mappedBy = "following", fetch = FetchType.LAZY)
-      private Set<User> followers = new HashSet<>();
-
-        @PrePersist
-        protected void onCreate() {
-            this.createdAt = LocalDateTime.now();
-            this.updatedAt = LocalDateTime.now();
-        }
-        @PreUpdate
-        protected void onUpdate() {
-              this.updatedAt = LocalDateTime.now();
-        }
-
-
 
 
 }

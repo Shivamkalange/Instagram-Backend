@@ -10,6 +10,7 @@ import com.instagram.instagram_backend.repository.PostRepository;
 import com.instagram.instagram_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -48,6 +49,7 @@ public class CommentService {
         return commentRepository.findByPostOrderByCreatedAtDesc(post);
     }
 
+
     public Comment addComment(String username, Long postId, CommentRequest comment) {
         Post post = postRepository.findById(postId).orElse(null);
         if (post == null) {
@@ -64,6 +66,7 @@ public class CommentService {
         return commentRepository.save(newComment);
     }
 
+    @Transactional
     public Comment updateComment(Long commentId, CommentRequest commentRequest) {
         Comment existingComment = commentRepository.findById(commentId).orElse(null);
         if (existingComment == null) {
@@ -73,6 +76,7 @@ public class CommentService {
         return commentRepository.save(existingComment);
     }
 
+    @Transactional
     public void deleteComment(Long commentID) {
         Comment exisitingComment = commentRepository.findById(commentID).orElse(null);
         if (exisitingComment == null) {

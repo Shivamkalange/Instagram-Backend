@@ -1,5 +1,9 @@
 package com.instagram.instagram_backend.dto;
 
+import com.instagram.instagram_backend.model.role.Role;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -14,6 +18,7 @@ public class LoginRequest {
 
     @NotBlank
     private String password;
+
 
     public @NotBlank String getUsername() {
         return username;
