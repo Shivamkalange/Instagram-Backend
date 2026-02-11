@@ -17,9 +17,16 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "Endpoints for user registration, login, token refresh and logout")
 public class AuthController {
 
     @Autowired
@@ -41,18 +48,47 @@ public class AuthController {
 
 
     @GetMapping("all")
+    @Operation(summary = "Get all users", description = "Returns a list of all registered users")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class)))
+    })
     public ResponseEntity<?> getAllUsers() {
         return new ResponseEntity<>(authService.getAllUsers(), HttpStatusCode.valueOf(200));
     }
 
-    @PostMapping("/Register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+    @PostMapping("/register")
+    @Operation(summary = "Register user", description = "Create a new user account")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "User created",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error", content = @Content)
+    })
+    public ResponseEntity<?> registerUser(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Registration payload",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = RegisterRequest.class))
+            )
+            @Valid @RequestBody RegisterRequest registerRequest) {
         User user = authService.register(registerRequest);
         return new ResponseEntity<>(user, HttpStatusCode.valueOf(201));
     }
 
-    @PostMapping("/Login")
-    public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
+    @PostMapping("/login")
+    @Operation(summary = "Login user", description = "Authenticate and return access + refresh tokens")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Authenticated",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content)
+    })
+    public ResponseEntity<?> loginUser(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Login payload",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = LoginRequest.class))
+            )
+            @Valid @RequestBody LoginRequest loginRequest) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
             String accessToken = jwtUtil.generateAccessToken(loginRequest.getUsername());
@@ -61,13 +97,23 @@ public class AuthController {
             return new ResponseEntity<>(new AuthResponse(accessToken, refreshToken), HttpStatusCode.valueOf(201));
         } catch (Exception e) {
             return new ResponseEntity<>("Invalid username or password", HttpStatusCode.valueOf(401));
-
         }
-
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+    @Operation(summary = "Refresh access token", description = "Provide a refresh token to receive a new access token")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "New access token",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token", content = @Content)
+    })
+    public ResponseEntity<?> refreshToken(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Refresh token payload",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = RefreshTokenRequest.class))
+            )
+            @RequestBody RefreshTokenRequest refreshTokenRequest) {
         String refreshToken = refreshTokenRequest.getRefreshToken();
         RefreshToken token = refreshTokenService.verifyExpiration(refreshToken);
         String username = token.getUser().getUsername();
@@ -77,7 +123,18 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logoutUser(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+    @Operation(summary = "Logout user", description = "Invalidate the given refresh token")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User logged out successfully",
+                    content = @Content(mediaType = "text/plain"))
+    })
+    public ResponseEntity<?> logoutUser(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Refresh token to invalidate",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = RefreshTokenRequest.class))
+            )
+            @RequestBody RefreshTokenRequest refreshTokenRequest) {
         refreshTokenService.deleteByToken(refreshTokenRequest.getRefreshToken());
         return new ResponseEntity<>("User logged out successfully", HttpStatusCode.valueOf(200));
     }
