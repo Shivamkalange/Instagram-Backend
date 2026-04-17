@@ -10,12 +10,10 @@ import com.instagram.instagram_backend.service.AuthService;
 import com.instagram.instagram_backend.service.RefreshTokenService;
 import com.instagram.instagram_backend.util.JwtUtil;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,22 +27,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Tag(name = "Authentication", description = "Endpoints for user registration, login, token refresh and logout")
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
+    private final JwtUtil jwtUtil;
+    private final RefreshTokenService refreshTokenService;
+    private final AuthenticationManager authenticationManager;
 
-    private User user;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private RefreshTokenService refreshTokenService;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public AuthController(AuthService authService, JwtUtil jwtUtil, RefreshTokenService refreshTokenService, AuthenticationManager authenticationManager) {
+        this.authService = authService;
+        this.jwtUtil = jwtUtil;
+        this.refreshTokenService = refreshTokenService;
+        this.authenticationManager = authenticationManager;
+    }
 
 
     @GetMapping("all")
@@ -91,9 +84,9 @@ public class AuthController {
             @Valid @RequestBody LoginRequest loginRequest) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-            String accessToken = jwtUtil.generateAccessToken(loginRequest.getUsername());
-            String refreshToken = jwtUtil.generateRefreshToken(loginRequest.getUsername());
-            refreshTokenService.CreateRefreshToken(refreshToken, loginRequest.getUsername(), jwtUtil.getREFRESH_TOKEN_VALIDITY());
+            String accessToken = jwtUtil.generateAccessToken(loginRequest);
+            String refreshToken = jwtUtil.generateRefreshToken(loginRequest);
+            refreshTokenService.createRefreshToken(refreshToken, loginRequest.getUsername(), jwtUtil.getREFRESH_TOKEN_VALIDITY());
             return new ResponseEntity<>(new AuthResponse(accessToken, refreshToken), HttpStatusCode.valueOf(201));
         } catch (Exception e) {
             return new ResponseEntity<>("Invalid username or password", HttpStatusCode.valueOf(401));
@@ -116,8 +109,8 @@ public class AuthController {
             @RequestBody RefreshTokenRequest refreshTokenRequest) {
         String refreshToken = refreshTokenRequest.getRefreshToken();
         RefreshToken token = refreshTokenService.verifyExpiration(refreshToken);
-        String username = token.getUser().getUsername();
-        String newAccessToken = jwtUtil.generateAccessToken(username);
+        LoginRequest loginRequest = new LoginRequest(token.getUser().getUsername(), null, token.getUser().getRole());
+        String newAccessToken = jwtUtil.generateAccessToken(loginRequest);
 
         return new ResponseEntity<>(new AuthResponse(newAccessToken, refreshToken), HttpStatusCode.valueOf(200));
     }

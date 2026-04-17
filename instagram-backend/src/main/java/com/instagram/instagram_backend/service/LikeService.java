@@ -7,7 +7,6 @@ import com.instagram.instagram_backend.model.User;
 import com.instagram.instagram_backend.repository.LikeRepository;
 import com.instagram.instagram_backend.repository.PostRepository;
 import com.instagram.instagram_backend.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -15,14 +14,15 @@ import java.util.Optional;
 @Service
 public class LikeService {
 
-    @Autowired
-    private LikeRepository likeRepository;
+    private final LikeRepository likeRepository;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private PostRepository postRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+    public LikeService(LikeRepository likeRepository, PostRepository postRepository, UserRepository userRepository) {
+        this.likeRepository = likeRepository;
+        this.postRepository = postRepository;
+        this.userRepository = userRepository;
+    }
 
     public Long getLikeCount(Long postId) {
         Post post = postRepository.findById(postId).orElse(null);

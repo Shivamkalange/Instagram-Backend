@@ -1,6 +1,7 @@
 package com.instagram.instagram_backend.util;
 
 
+import com.instagram.instagram_backend.dto.LoginRequest;
 import com.instagram.instagram_backend.dto.RegisterRequest;
 import com.instagram.instagram_backend.model.User;
 import com.instagram.instagram_backend.model.role.Role;
@@ -33,18 +34,22 @@ public class JwtUtil {
         return REFRESH_TOKEN_VALIDITY;
     }
 
-    public String generateAccessToken(String username) {
+    public String generateAccessToken(LoginRequest user) {
+        String username = user.getUsername();
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY))
                 .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
                 .compact();
     }
 
-    public String generateRefreshToken(String username) {
+    public String generateRefreshToken(LoginRequest user) {
+        String username = user.getUsername();
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_VALIDITY))
                 .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()))

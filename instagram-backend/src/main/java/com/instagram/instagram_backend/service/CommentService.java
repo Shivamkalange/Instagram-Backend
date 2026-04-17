@@ -8,7 +8,6 @@ import com.instagram.instagram_backend.model.User;
 import com.instagram.instagram_backend.repository.CommentRepository;
 import com.instagram.instagram_backend.repository.PostRepository;
 import com.instagram.instagram_backend.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,14 +16,15 @@ import java.util.List;
 @Service
 public class CommentService {
 
-    @Autowired
-    private CommentRepository commentRepository;
+    private final CommentRepository commentRepository;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private PostRepository postRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+    public CommentService(CommentRepository commentRepository, PostRepository postRepository, UserRepository userRepository) {
+        this.commentRepository = commentRepository;
+        this.postRepository = postRepository;
+        this.userRepository = userRepository;
+    }
 
     public List<Comment> getCommentsByPostId(Long id) {
         Post post = postRepository.findById(id).orElse(null);

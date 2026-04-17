@@ -38,8 +38,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-        var authProvider = new DaoAuthenticationProvider(userDetailsService);
+    public AuthenticationProvider authenticationProvider(CustomUserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+        var authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
@@ -49,10 +50,11 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                                 .requestMatchers(
-                                        "/api/auth/Register",
-                                        "/api/auth/Login",
+                                        "/api/auth/register",
+                                        "/api/auth/login",
                                        "/api/auth/refresh-token",
                                       "/api/auth/logout",
+                                        "/api/posts/**",
                                         "/swagger-ui/**",
                                         "/swagger-ui.html",
                                         "/actuator/*"

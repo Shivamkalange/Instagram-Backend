@@ -23,11 +23,11 @@ public class Post {
 
 
     @NotBlank
-    @Size(max=2200)
-    @Column(nullable = false,length = 2200)
+    @Size(max = 2200)
+    @Column(nullable = false, length = 2200)
     private String caption;
 
-    @Size(max=1000)
+    @Size(max = 1000)
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -133,4 +133,6 @@ public class Post {
         this.comments = comments;
         this.likes = likes;
     }
+
+
 }

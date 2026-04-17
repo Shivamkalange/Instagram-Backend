@@ -34,16 +34,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatusCode.valueOf(404));
     }
 
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<?> handleUnauthorizedException(UnauthorizedException ex) {
-        ErrorResponse response = new ErrorResponse();
-        response.setTimestamp(LocalDateTime.now());
-        response.setMessage(ex.getMessage());
-        response.setStatus(401);
-        response.setError("Unauthorized");
-
-        return new ResponseEntity<>(response, HttpStatusCode.valueOf(401));
-    }
+//    @ExceptionHandler(UnauthorizedException.class)
+//    public ResponseEntity<?> handleUnauthorizedException(UnauthorizedException ex) {
+//        ErrorResponse response = new ErrorResponse();
+//        response.setTimestamp(LocalDateTime.now());
+//        response.setMessage(ex.getMessage());
+//        response.setStatus(401);
+//        response.setError("Unauthorized");
+//
+//        return new ResponseEntity<>(response, HttpStatusCode.valueOf(401));
+//    }
 
     @ExceptionHandler({AccessDeniedException.class, org.springframework.security.access.AccessDeniedException.class})
     public ResponseEntity<?> handleAccessDeniedException(Exception ex) {

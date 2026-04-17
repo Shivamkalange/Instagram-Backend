@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
+//@Data
 public class RegisterRequest {
 
     public @NotBlank @Size(min = 3, max = 50) String getUsername() {
@@ -48,30 +48,35 @@ public class RegisterRequest {
     @Email
     private String email;
 
-//    public Role getRole() {
-//        return role;
-//    }
-//
-//    public void setRole(Role role) {
-//        this.role = role;
-//    }
-//
-//    @Enumerated(EnumType.STRING)
-//    @Column(nullable = true)
-//    private Role role;
+    @NotBlank
+    @Size(min = 6, max = 100)
+    private String password;
 
-    public RegisterRequest(String username, String email, String password) {
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+    public Role getRole() {
+        return role;
+    }
+
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+
+    public RegisterRequest(String username, String email, String password, Role role) {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.role = role;
     }
 
     public RegisterRequest() {
     }
 
-    @NotBlank
-    @Size(min = 6, max = 100)
-    private String password;
+
 }
 
 
