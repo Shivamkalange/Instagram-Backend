@@ -7,6 +7,7 @@ import com.instagram.instagram_backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 public class RefreshTokenService {
@@ -19,16 +20,26 @@ public class RefreshTokenService {
         this.userRepository = userRepository;
     }
 
-    public RefreshToken createRefreshToken(String token, String username, Long validityInMs) {
+    public void createOrUpdateRefreshToken(String token, String username, Long validityInMs) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
             throw new IllegalArgumentException("User not found with username: " + username);
         }
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setToken(token);
-        refreshToken.setUser(user);
-        refreshToken.setExpiryDate(Instant.now().plusMillis(validityInMs));
-        return refreshTokenRepository.save(refreshToken);
+
+        Optional<RefreshToken> existingToken = refreshTokenRepository.findByUser(user);
+        if (existingToken.isPresent()) {
+            RefreshToken refreshToken = existingToken.get();
+            refreshToken.setToken(token);
+            refreshToken.setExpiryDate(Instant.now().plusMillis(validityInMs));
+             refreshTokenRepository.save(refreshToken);
+        } else {
+
+            RefreshToken refreshToken = new RefreshToken();
+            refreshToken.setToken(token);
+            refreshToken.setUser(user);
+            refreshToken.setExpiryDate(Instant.now().plusMillis(validityInMs));
+             refreshTokenRepository.save(refreshToken);
+        }
     }
 
     public RefreshToken verifyExpiration(String token) {

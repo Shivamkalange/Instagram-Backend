@@ -5,6 +5,7 @@ import com.instagram.instagram_backend.model.Post;
 import com.instagram.instagram_backend.service.PostService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +25,12 @@ public class PostController {
     @Autowired
     private PostService postService;
 
-    @GetMapping
+    @GetMapping("PaginationAndSorting/{page}/{size}")
+    public ResponseEntity<Page<PostRequest>> getPostsWithPaginationAndSorting(@PathVariable int page, @PathVariable int size, @PathVariable Optional<String> sortBy) {
+        Page<PostRequest> posts = postService.getPostsWithPaginationAndSorting(page, size, sortBy.orElse("caption"));
+        return ResponseEntity.ok(posts);
+    }
+    @GetMapping("/all")
     public ResponseEntity<List<Post>> getAllPosts() {
         return ResponseEntity.ok(postService.getAllPosts());
     }
@@ -53,13 +59,18 @@ public class PostController {
 
 
     @GetMapping("userId/{id}")
-    public ResponseEntity<?> getPostsByUserId(@PathVariable Long id) {
-        try {
-            List<Post> userPosts = postService.getPostsByUserId(id);
-            return new ResponseEntity<>(userPosts, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> getPostsByUserId(@PathVariable Long id, Authentication authentication) {
+
+        String username = authentication.getName();
+        List<Post> userPosts = postService.getPostsByUserId(id);
+        if (userPosts.isEmpty()) {
+            return new ResponseEntity<>("No posts found for this user", HttpStatus.NOT_FOUND);
         }
+        if (!userPosts.get(0).getUser().getUsername().equals(username)) {
+            return new ResponseEntity<>("Unauthorized access to posts", HttpStatus.UNAUTHORIZED);
+        }
+        userPosts = postService.getPostsByUserId(id);
+        return new ResponseEntity<>(userPosts, HttpStatus.OK);
     }
 
 

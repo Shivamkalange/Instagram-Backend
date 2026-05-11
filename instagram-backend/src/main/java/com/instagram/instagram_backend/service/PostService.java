@@ -5,8 +5,13 @@ import com.instagram.instagram_backend.model.Post;
 import com.instagram.instagram_backend.model.User;
 import com.instagram.instagram_backend.repository.PostRepository;
 import com.instagram.instagram_backend.repository.UserRepository;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -21,10 +26,12 @@ public class PostService {
         this.userRepository = userRepository;
     }
 
+    @Cacheable(value = "postsCache", key = "'allPosts'")
     public List<Post> getAllPosts() {
         return postRepository.findAll();
     }
 
+    @Cacheable(value = "postsCache", key = "#id")
     public List<Post> getPostsById(Long id) {
         Post post = postRepository.findById(id).orElse(null);
         if (post == null) {
@@ -104,5 +111,11 @@ public class PostService {
         }
         postRepository.deleteById(id);
         
+    }
+
+    public Page<PostRequest> getPostsWithPaginationAndSorting(int page, int size, String sortBy) {
+        Pageable pageable = PageRequest.of(page,size, Sort.by(sortBy).descending());
+        Page<Post> postPage = postRepository.findAll(pageable);
+        return postPage.map(post -> new PostRequest(post.getImageUrl(), post.getCaption()));
     }
 }

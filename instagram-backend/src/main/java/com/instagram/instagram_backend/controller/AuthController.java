@@ -86,7 +86,7 @@ public class AuthController {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
             String accessToken = jwtUtil.generateAccessToken(loginRequest);
             String refreshToken = jwtUtil.generateRefreshToken(loginRequest);
-            refreshTokenService.createRefreshToken(refreshToken, loginRequest.getUsername(), jwtUtil.getREFRESH_TOKEN_VALIDITY());
+            refreshTokenService.createOrUpdateRefreshToken(refreshToken, loginRequest.getUsername(), jwtUtil.getREFRESH_TOKEN_VALIDITY());
             return new ResponseEntity<>(new AuthResponse(accessToken, refreshToken), HttpStatusCode.valueOf(201));
         } catch (Exception e) {
             return new ResponseEntity<>("Invalid username or password", HttpStatusCode.valueOf(401));
